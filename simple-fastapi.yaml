@@ -1,0 +1,57 @@
+namespace: simple-fastapi
+simple-fastapi:
+  defines: runnable
+  metadata:
+    name: simple-fastapi
+    description: A simple application based on FastAPI for Python backend development.
+    icon: https://emojiapi.dev/api/v1/snake.svg
+  containers:
+    simple-fastapi:
+      build: .
+      dockerfile: Dockerfile
+  services:
+    main:
+      container: simple-fastapi
+      port: <- $port
+      host-port: <- $port
+      publish: false
+      protocol: TCP
+      description: Main application port
+  connections:
+    database:
+      target: simple-fastapi/db
+      service: postgres
+  variables:
+    host:
+      env: HOST
+      type: string
+      description: The host IP
+      value: 0.0.0.0
+    port:
+      env: PORT
+      type: int
+      description: The port which the app runs
+      value: 8000
+    sentry-dsn:
+      env: SENTRY_DSN
+      type: string
+      description: Data Source Name for the Sentry application monitoring platform
+      value: '!!!SETME-USE-SECRETS!!!'
+    db-dsn:
+      env: DB_DSN
+      type: string
+      description: Database connection string
+      value: <- connection-hostname("database")
+    db-password:
+      env: DB_PASSWORD
+      type: string
+      description: Password for the database
+      value: '!!!SETME-USE-SECRETS!!!'
+db:
+  defines: runnable
+  inherits: postgresql/db
+stack:
+  defines: group
+  members:
+    - simple-fastapi/simple-fastapi
+    - simple-fastapi/db
